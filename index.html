@@ -2,250 +2,171 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>The Mesh</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SINE - This Is Not A New Internet</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            user-select: none; /* keep clean UI */
         }
 
         body {
             font-family: 'Courier New', monospace;
             background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
             overflow: hidden;
             color: #e0e0e0;
         }
 
-        .entrance-container {
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .entrance-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            pointer-events: none;
+            background: rgba(10, 14, 39, 0.3);
+        }
+
+        .content-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             width: 100%;
-            max-width: 1100px;
-            padding: 30px 20px;
-            gap: 30px;
-            position: relative;
-            z-index: 2;
-        }
-
-        /* REAL EARTH WITH MAPS — HIGH DETAIL 3D SPHERE */
-        .earth-stage {
-            position: relative;
-            width: 320px;
-            height: 320px;
-            margin: 0 auto;
-            cursor: pointer;
-            filter: drop-shadow(0 0 18px rgba(74,144,226,0.6));
-        }
-
-        .earth-wrapper {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            perspective: 1200px;
-            perspective-origin: 50% 50%;
-        }
-
-        canvas#earthCanvas {
-            width: 100% !important;
-            height: 100% !important;
-            border-radius: 50%;
-            box-shadow: 
-                0 0 45px rgba(74, 144, 226, 0.5),
-                inset 0 0 0 2px rgba(255,255,255,0.1);
-            transition: box-shadow 0.3s ease;
-            display: block;
-        }
-
-        canvas#earthCanvas:hover {
-            box-shadow: 0 0 65px rgba(74, 144, 226, 0.8), inset 0 0 0 2px rgba(255,255,255,0.3);
-        }
-
-        .globe-label {
-            position: absolute;
-            top: -38px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 11px;
-            color: #8aaeff;
-            text-transform: uppercase;
-            letter-spacing: 2.5px;
-            font-weight: bold;
-            background: rgba(10,14,39,0.5);
-            backdrop-filter: blur(4px);
-            padding: 2px 12px;
-            border-radius: 40px;
-            white-space: nowrap;
-            font-family: 'Courier New', monospace;
-            z-index: 5;
-        }
-
-        .rotation-indicator {
-            position: absolute;
-            bottom: -32px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 9px;
-            color: #6a8bc2;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-            background: rgba(0,0,0,0.4);
-            padding: 2px 12px;
-            border-radius: 20px;
-            backdrop-filter: blur(3px);
-            white-space: nowrap;
-            font-family: monospace;
+            max-width: 1000px;
+            padding: 40px;
+            gap: 40px;
+            pointer-events: auto;
         }
 
         .message-container {
             text-align: center;
-            animation: fadeInUp 0.9s ease-out 0.3s both;
+            animation: fadeInUp 1s ease-out 0.5s both;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 14, 39, 0.6);
+            padding: 40px;
+            border-radius: 8px;
+            border: 1px solid rgba(74, 144, 226, 0.2);
         }
 
         .tinani {
-            font-size: 34px;
+            font-size: 32px;
             font-weight: bold;
-            letter-spacing: 4px;
+            letter-spacing: 3px;
             color: #4a90e2;
             text-transform: uppercase;
-            margin-bottom: 12px;
+            margin-bottom: 20px;
             font-family: 'Courier New', monospace;
-            text-shadow: 0 0 5px rgba(74,144,226,0.3);
         }
 
         .tinani span {
             display: block;
             font-size: 24px;
             color: #7a9cd9;
-            margin-top: 6px;
+            margin-top: 8px;
             font-weight: normal;
             letter-spacing: 2px;
         }
 
         .subtitle {
             font-size: 14px;
-            line-height: 1.7;
-            color: #b0b8d4;
-            max-width: 620px;
-            margin: 18px auto;
+            line-height: 1.8;
+            color: #a0a0a0;
+            max-width: 600px;
+            margin: 20px auto;
             text-align: center;
         }
 
         .subtitle strong {
-            color: #5f9eff;
+            color: #4a90e2;
             font-weight: bold;
-            text-shadow: 0 0 2px #1e3a8a;
         }
 
         .separator {
-            width: 70px;
+            width: 60px;
             height: 1px;
-            background: linear-gradient(90deg, transparent, #4a90e2, #8ab3ff, #4a90e2, transparent);
-            margin: 18px auto;
+            background: linear-gradient(90deg, transparent, #4a90e2, transparent);
+            margin: 20px auto;
         }
 
-        .status-line {
-            font-size: 11px;
-            color: #6d8fc6;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-top: 20px;
-            animation: blinkSoft 2s infinite;
-        }
-
-        @keyframes blinkSoft {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.55; }
+        h1 {
+            font-size: 18px;
+            font-weight: normal;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            color: #e0e0e0;
         }
 
         .clock-info {
             display: flex;
             justify-content: center;
-            gap: 45px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-            background: rgba(15,20,35,0.55);
-            backdrop-filter: blur(6px);
-            padding: 12px 30px;
-            border-radius: 60px;
-            border: 0.5px solid rgba(74,144,226,0.3);
+            gap: 40px;
+            margin-top: 40px;
+            font-size: 12px;
+            animation: fadeInUp 1.2s ease-out 0.7s both;
         }
 
         .time-box {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 14, 39, 0.6);
+            padding: 15px 25px;
+            border-radius: 6px;
+            border: 1px solid rgba(74, 144, 226, 0.2);
         }
 
         .time-label {
-            color: #9ab3e6;
+            color: #7a9cd9;
             text-transform: uppercase;
-            letter-spacing: 1.2px;
-            font-size: 9px;
-            font-weight: bold;
+            letter-spacing: 1px;
+            font-size: 10px;
         }
 
         .time-value {
-            color: #d4e6ff;
+            color: #4a90e2;
             font-weight: bold;
-            font-size: 17px;
+            font-size: 16px;
             font-family: 'Courier New', monospace;
-            background: #0b0f1c60;
-            padding: 2px 12px;
-            border-radius: 32px;
+        }
+
+        .status-line {
+            font-size: 11px;
+            color: #5a7a9a;
             letter-spacing: 1px;
-        }
-
-        .cta-button {
-            margin-top: 25px;
-            padding: 12px 44px;
-            border: 2px solid #4a90e2;
-            background: rgba(10,14,39,0.7);
-            backdrop-filter: blur(4px);
-            color: #c6e0ff;
-            font-size: 12px;
-            letter-spacing: 2.5px;
             text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            font-family: 'Courier New', monospace;
-            border-radius: 40px;
-            font-weight: bold;
+            margin-top: 30px;
+            animation: blink 2s infinite;
+            animation-delay: 1s;
         }
 
-        .cta-button:hover {
-            background: #4a90e2;
-            color: #0a0e27;
-            box-shadow: 0 0 22px rgba(74, 144, 226, 0.7);
-            border-color: #ffffff90;
-            transform: scale(1.02);
-        }
-
-        .loading-dots {
-            display: inline-block;
-            animation: loadingDots 1.5s infinite;
-            font-weight: bold;
-        }
-
-        @keyframes loadingDots {
-            0%, 20% { content: '.'; opacity: 0.6; }
-            40% { content: '..'; opacity: 1; }
-            60%, 100% { content: '...'; opacity: 0.9; }
+        @keyframes blink {
+            0%, 49%, 100% { opacity: 1; }
+            50%, 99% { opacity: 0.5; }
         }
 
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(22px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -253,453 +174,397 @@
             }
         }
 
-        /* subtle earth pulse */
-        @keyframes earthGlow {
-            0% { filter: drop-shadow(0 0 12px rgba(74,144,226,0.4)); }
-            100% { filter: drop-shadow(0 0 24px rgba(74,144,226,0.7)); }
-        }
-        .earth-stage {
-            animation: earthGlow 3s infinite alternate;
+        .cta-button {
+            margin-top: 20px;
+            padding: 12px 40px;
+            border: 2px solid #4a90e2;
+            background: transparent;
+            color: #4a90e2;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            animation: fadeInUp 1.4s ease-out 0.9s both;
+            pointer-events: auto;
         }
 
-        @media (max-width: 650px) {
-            .entrance-container { padding: 20px; gap: 25px; }
-            .earth-stage { width: 260px; height: 260px; }
-            .clock-info { gap: 20px; padding: 8px 20px; }
-            .tinani { font-size: 28px; }
+        .cta-button:hover:not(:disabled) {
+            background: #4a90e2;
+            color: #0a0e27;
+            box-shadow: 0 0 20px rgba(74, 144, 226, 0.4);
+        }
+
+        .cta-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading-dots::after {
+            content: '.';
+            animation: dots 1.5s steps(3, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .earth-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 11px;
+            color: #7a9cd9;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            z-index: 20;
+            animation: fadeInDown 1s ease-out 0.3s both;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .earth-subtitle {
+            font-size: 10px;
+            color: #5a7a9a;
+            margin-top: 4px;
         }
     </style>
 </head>
 <body>
-    <div class="entrance-container">
-        <!-- REAL EARTH WITH HIGH-RES MAP TEXTURE & ATMOSPHERE -->
-        <div style="position: relative; width: 100%; display: flex; justify-content: center;">
-            <div class="earth-stage">
-                <div class="globe-label">🌍 LIVE EARTH • REAL MAPS</div>
-                <div class="earth-wrapper">
-                    <canvas id="earthCanvas" width="800" height="800" style="width:100%; height:100%;"></canvas>
+    <div id="canvas-container"></div>
+
+    <div class="earth-info">
+        <div>LIVE EARTH ROTATION</div>
+        <div class="earth-subtitle">Synchronized with UTC</div>
+    </div>
+
+    <div class="entrance-overlay">
+        <div class="content-wrapper">
+            <div class="message-container">
+                <div class="tinani">
+                    T.I.N.A.N.I
+                    <span>T.I.S.E.</span>
                 </div>
-                <div class="rotation-indicator" id="rotationIndicator">🌐 SYNCHRONIZED WITH UTC • REAL ROTATION</div>
+                <div class="separator"></div>
+                <h1>This Is Not A New Internet.<br/>This Is Something Else.</h1>
+                <div class="subtitle">
+                    You are not joining a network. You are becoming part of <strong>The Mesh</strong>—
+                    a living fabric of independent nodes communicating directly, guided only by 
+                    <strong>Genesis</strong>, sustained by <strong>SINE</strong>.<br/><br/>
+                    Here, there is no center. No walls. No intermediaries.<br/>
+                    <strong>Just connection.</strong>
+                </div>
             </div>
-        </div>
 
-        <div class="message-container">
-            <div class="tinani">
-                T.I.N.A.N.I
-                <span>T.I.S.E.</span>
+            <div class="clock-info">
+                <div class="time-box">
+                    <div class="time-label">UTC Time</div>
+                    <div class="time-value" id="utcTime">00:00:00</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-label">Earth Rotation</div>
+                    <div class="time-value" id="rotationAngle">0°</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-label">Mesh Status</div>
+                    <div class="time-value" id="meshStatus">READY</div>
+                </div>
             </div>
-            <div class="separator"></div>
-            <h1 style="font-size: 18px; font-weight: normal; letter-spacing: 2px; margin-bottom: 14px;">
-                This Is Not A New Internet.<br/>This Is Something Else.
-            </h1>
-            <div class="subtitle">
-                You are not joining a network. You are becoming part of <strong>The Mesh</strong>—
-                a living fabric of independent nodes communicating directly, guided only by 
-                <strong>Genesis</strong>, sustained by <strong>SINE</strong>.<br/><br/>
-                Here, there is no center. No walls. No intermediaries.<br/>
-                <strong>Just connection. The Earth spins, The Mesh breathes.</strong>
-            </div>
-        </div>
 
-        <div class="clock-info">
-            <div class="time-box">
-                <div class="time-label">UTC TIME</div>
-                <div class="time-value" id="utcTime">--:--:--</div>
+            <div class="status-line">
+                ▌ Waiting for connection to The Mesh<span class="loading-dots"></span>
             </div>
-            <div class="time-box">
-                <div class="time-label">EARTH ROTATION</div>
-                <div class="time-value" id="rotationAngle">0.0°</div>
-            </div>
-            <div class="time-box">
-                <div class="time-label">MESH STATUS</div>
-                <div class="time-value" id="meshStatus">⚡ ACTIVE</div>
-            </div>
-        </div>
 
-        <div class="status-line">
-            ▌ NODE SYNC WITH EARTH'S ROTATION • THE MESH AWAITS<span class="loading-dots">.</span>
+            <button class="cta-button" id="enterBtn" onclick="enterFabric()">ENTER THE MESH</button>
         </div>
-
-        <button class="cta-button" id="enterMeshBtn">ENTER THE MESH</button>
     </div>
 
     <script>
-        (function() {
-            // ----------------------------------------------
-            // REAL EARTH — HIGH QUALITY MAP TEXTURE (Equirectangular)
-            // We generate a detailed Earth map canvas with realistic continents, cities glow & clouds
-            // This gives a "real earth with maps and everything" feel but keeps the site simple, no external images.
-            // The texture includes political borders, ocean color, topographic style, and a subtle cloud layer.
-            // ----------------------------------------------
-            
-            const canvas = document.getElementById('earthCanvas');
+        // ============================================
+        // THREE.JS SCENE SETUP
+        // ============================================
+
+        let scene, camera, renderer, earth, stars;
+        const canvas = document.getElementById('canvas-container');
+
+        function initScene() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x0a0e27, 2000, 3000);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+            camera.position.z = 2.5;
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            canvas.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            sunLight.position.set(5, 3, 5);
+            sunLight.castShadow = true;
+            sunLight.shadow.mapSize.width = 2048;
+            sunLight.shadow.mapSize.height = 2048;
+            scene.add(sunLight);
+
+            const rimLight = new THREE.DirectionalLight(0x4a90e2, 0.3);
+            rimLight.position.set(-5, -3, -5);
+            scene.add(rimLight);
+
+            // Create Earth
+            createEarth();
+
+            // Create Starfield
+            createStarfield();
+
+            // Handle resize
+            window.addEventListener('resize', onWindowResize);
+
+            // Start animation loop
+            animate();
+        }
+
+        function createEarth() {
+            const geometry = new THREE.SphereGeometry(1, 256, 256);
+
+            // Create procedural earth texture
+            const canvas = document.createElement('canvas');
+            canvas.width = 2048;
+            canvas.height = 1024;
             const ctx = canvas.getContext('2d');
-            
-            // set canvas resolution for crisp texture (retina friendly)
-            const texWidth = 2048;
-            const texHeight = 1024;
-            canvas.width = texWidth;
-            canvas.height = texHeight;
-            
-            // ----- CREATE PHOTOREALISTIC EARTH MAP FROM SCRATCH (vector-like but raster with procedural details) -----
-            function drawEarthMap(ctx, w, h) {
-                // 1. Base ocean gradient (deep to shallow)
-                const gradOcean = ctx.createLinearGradient(0, 0, w*0.7, h);
-                gradOcean.addColorStop(0, '#0a2f5a');
-                gradOcean.addColorStop(0.5, '#1b4f7a');
-                gradOcean.addColorStop(1, '#0d3b60');
-                ctx.fillStyle = gradOcean;
-                ctx.fillRect(0, 0, w, h);
-                
-                // 2. Add subtle noise / water ripples
-                for (let i = 0; i < 1800; i++) {
-                    ctx.fillStyle = `rgba(140, 200, 255, ${Math.random() * 0.08})`;
-                    ctx.fillRect(Math.random() * w, Math.random() * h, 2, 2);
-                }
-                
-                // Helper: draw landmass with bumpy natural edges (simplified but recognizable continents)
-                function addLand(points, color, shadow = true) {
-                    ctx.beginPath();
-                    for(let i = 0; i < points.length; i++) {
-                        const x = points[i][0] * w;
-                        const y = points[i][1] * h;
-                        if(i === 0) ctx.moveTo(x, y);
-                        else ctx.lineTo(x, y);
-                    }
-                    ctx.closePath();
-                    if(shadow) {
-                        ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                        ctx.shadowBlur = 6;
-                    }
-                    ctx.fillStyle = color;
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
-                    // add border definition
-                    ctx.strokeStyle = 'rgba(80,110,60,0.5)';
-                    ctx.lineWidth = 1.2;
-                    ctx.stroke();
-                }
-                
-                // Base land color palette (realistic earthy greens, browns, arid)
-                const greenForest = '#5c8c4a';
-                const greenGrass = '#7aa55c';
-                const sandBeige = '#cfb27c';
-                const mountainGray = '#a0866b';
-                const snowWhite = '#eef4ff';
-                const darkGreen = '#487a3b';
-                
-                // ---- AFRICA (central + north) ----
-                addLand([
-                    [0.45,0.52],[0.47,0.48],[0.52,0.46],[0.57,0.47],[0.58,0.51],[0.57,0.55],[0.53,0.58],[0.49,0.59],[0.45,0.57],[0.43,0.54]
-                ], greenForest);
-                // South Africa extension
-                addLand([[0.52,0.62],[0.56,0.59],[0.61,0.60],[0.59,0.64],[0.55,0.65],[0.52,0.63]], darkGreen);
-                // Madagascar
-                addLand([[0.65,0.57],[0.68,0.57],[0.69,0.60],[0.67,0.62],[0.64,0.60]], '#67944c');
-                
-                // ---- EURASIA ----
-                addLand([
-                    [0.55,0.35],[0.62,0.32],[0.68,0.34],[0.72,0.38],[0.74,0.44],[0.71,0.48],[0.66,0.49],[0.61,0.46],[0.58,0.43],[0.55,0.39]
-                ], '#6f9e4d');
-                // Europe
-                addLand([
-                    [0.44,0.38],[0.49,0.35],[0.53,0.36],[0.54,0.41],[0.51,0.44],[0.46,0.43],[0.43,0.40]
-                ], '#7da357');
-                // India
-                addLand([[0.66,0.52],[0.70,0.51],[0.72,0.54],[0.69,0.56],[0.65,0.55]], '#b38f5b');
-                // Southeast asia
-                addLand([[0.73,0.53],[0.77,0.52],[0.79,0.56],[0.76,0.58],[0.73,0.56]], '#558b3a');
-                // China / Japan islands
-                addLand([[0.75,0.43],[0.79,0.41],[0.82,0.44],[0.80,0.47],[0.76,0.46]], '#6c9e47');
-                
-                // ---- NORTH AMERICA ----
-                addLand([
-                    [0.18,0.32],[0.24,0.28],[0.31,0.29],[0.33,0.33],[0.30,0.38],[0.25,0.40],[0.20,0.39],[0.17,0.36]
-                ], '#6f9e4f');
-                // West coast + mexico
-                addLand([[0.16,0.42],[0.22,0.41],[0.24,0.45],[0.20,0.48],[0.15,0.46]], '#b8925c');
-                // Greenland (ice)
-                addLand([[0.28,0.16],[0.36,0.13],[0.42,0.16],[0.39,0.21],[0.31,0.22],[0.27,0.19]], '#cbddee');
-                
-                // ---- SOUTH AMERICA ----
-                addLand([
-                    [0.30,0.58],[0.35,0.55],[0.41,0.56],[0.43,0.60],[0.40,0.65],[0.34,0.66],[0.30,0.63]
-                ], '#61944a');
-                // Amazonian details
-                addLand([[0.34,0.59],[0.38,0.58],[0.39,0.61],[0.36,0.62]], '#447d37');
-                
-                // ---- AUSTRALIA ----
-                addLand([
-                    [0.80,0.68],[0.84,0.67],[0.86,0.70],[0.84,0.73],[0.80,0.72],[0.78,0.69]
-                ], '#b38f54');
-                
-                // Antarctica (ice sheet)
-                ctx.fillStyle = '#eaf4ff';
-                ctx.beginPath();
-                ctx.rect(0, h-0.07*h, w, 0.08*h);
-                ctx.fill();
-                ctx.fillStyle = '#bcd0e6';
-                for(let i=0; i<80; i++) {
-                    ctx.fillRect(Math.random()*w, h-0.05*h+Math.random()*0.04*h, 4, 3);
-                }
-                
-                // Add mountain highlights & desert details (Sahara)
-                ctx.fillStyle = '#dbb87c';
-                addLand([[0.35,0.46],[0.44,0.45],[0.43,0.50],[0.36,0.49]], '#c9a16b');
-                
-                // extra details: great lakes & rivers (tiny)
-                ctx.fillStyle = '#60a5c0';
-                ctx.beginPath();
-                ctx.ellipse(0.26*w, 0.34*h, 0.015*w, 0.012*h, 0, 0, Math.PI*2);
-                ctx.fill();
-                
-                // add clouds & atmospheric wisps
-                ctx.globalCompositeOperation = 'lighter';
-                for(let c=0;c<300;c++) {
-                    ctx.fillStyle = `rgba(255,255,245,${Math.random()*0.25})`;
-                    ctx.beginPath();
-                    ctx.ellipse(Math.random()*w, Math.random()*h, Math.random()*12+4, Math.random()*8+3, 0, 0, Math.PI*2);
-                    ctx.fill();
-                }
-                ctx.globalCompositeOperation = 'source-over';
-                
-                // city lights (subtle points representing urban clusters)
-                const cities = [[0.28,0.34],[0.36,0.38],[0.48,0.44],[0.62,0.46],[0.70,0.51],[0.44,0.49],[0.55,0.52],[0.73,0.37],[0.18,0.44]];
-                for(let city of cities) {
-                    ctx.shadowBlur = 0;
-                    ctx.fillStyle = '#fff9c4';
-                    ctx.beginPath();
-                    ctx.arc(city[0]*w, city[1]*h, 3.5, 0, Math.PI*2);
-                    ctx.fill();
-                    ctx.fillStyle = '#ffdd88';
-                    ctx.beginPath();
-                    ctx.arc(city[0]*w, city[1]*h, 1.8, 0, Math.PI*2);
-                    ctx.fill();
-                }
-                // add some atmospheric glow near equator
-                ctx.fillStyle = 'rgba(255,210,120,0.08)';
-                ctx.fillRect(0, h*0.45, w, h*0.12);
-            }
-            
-            // draw earth map texture
-            drawEarthMap(ctx, texWidth, texHeight);
-            
-            // add extra map grids: latitude/longitude faint lines (elegant)
-            ctx.strokeStyle = 'rgba(210,230,255,0.22)';
-            ctx.lineWidth = 1.2;
-            for(let lat = -80; lat <= 80; lat+=20) {
-                let y = ((lat + 90) / 180) * texHeight;
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(texWidth, y);
-                ctx.stroke();
-            }
-            for(let lon = -180; lon <= 180; lon+=30) {
-                let x = ((lon + 180) / 360) * texWidth;
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, texHeight);
-                ctx.stroke();
-            }
-            
-            // apply final touches: coastal glow & specular
-            ctx.globalCompositeOperation = 'overlay';
-            ctx.fillStyle = 'rgba(100,150,210,0.12)';
-            ctx.fillRect(0,0,texWidth,texHeight);
-            ctx.globalCompositeOperation = 'source-over';
-            
-            // Add "EARTH" label mark (stylized)
-            ctx.font = `bold ${Math.floor(texWidth*0.025)}px "Courier New"`;
-            ctx.fillStyle = '#fff8e7';
-            ctx.shadowBlur = 0;
-            ctx.fillText("🌍 REAL MAP", texWidth*0.03, texHeight*0.06);
 
-                        // Now we have a complete high-detail earth texture with realistic continents, cities and cloud wisps
-            // 3D Sphere rendering using Three.js? But the request is "keep it simple site it is, just add real earth structure"
-            // I'll implement a lightweight Three.js sphere to preserve 3D rotation but avoid overcomplicating? Actually the current canvas is 2D texture.
-            // To get REAL EARTH SPHERE with rotation synchronized to UTC: use Three.js for perfect spherical mapping.
-            // I'll integrate Three.js CDN and map the texture onto a sphere with exact UTC rotation.
-            // This gives full earth with maps & everything, no external images dependency (procedural texture is the map!)
-        })();
-    </script>
-    
-    <!-- Three.js for REAL 3D EARTH SPHERE with maps texture (procedurally generated high-res map) -->
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
-            }
-        }
-    </script>
+            // Create gradient sky
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#1a3a52');   // Deep ocean
+            gradient.addColorStop(0.4, '#2c5aa0'); // Mid ocean
+            gradient.addColorStop(0.5, '#4a90e2'); // Light ocean
+            gradient.addColorStop(0.6, '#2d5a3d'); // Land
+            gradient.addColorStop(1, '#1a3a52');   // Polar
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    <script type="module">
-        import * as THREE from 'three';
-        
-        // get the canvas element container, replace canvas with Three.js renderer but preserve same layout
-        const earthStage = document.querySelector('.earth-stage');
-        const existingCanvas = document.getElementById('earthCanvas');
-        // remove existing canvas and replace with WebGL canvas
-        existingCanvas.style.display = 'none';
-        
-        const container = document.createElement('div');
-        container.style.width = '100%';
-        container.style.height = '100%';
-        container.style.borderRadius = '50%';
-        container.style.overflow = 'hidden';
-        container.style.position = 'relative';
-        earthStage.querySelector('.earth-wrapper').appendChild(container);
-        
-        // setup scene, camera, renderer for real earth sphere
-        const scene = new THREE.Scene();
-        scene.background = null; // transparent to keep gradient background
-        const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-        camera.position.set(0, 0, 3.2);
-        
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(320, 320);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        container.appendChild(renderer.domElement);
-        
-        // CREATE HIGH RESOLUTION TEXTURE from the procedurally drawn canvas map we already generated!
-        const mapCanvas = document.getElementById('earthCanvas');
-        const earthTexture = new THREE.CanvasTexture(mapCanvas);
-        earthTexture.wrapS = THREE.RepeatWrapping;
-        earthTexture.wrapT = THREE.ClampToEdgeWrapping;
-        earthTexture.minFilter = THREE.LinearFilter;
-        
-        const material = new THREE.MeshStandardMaterial({
-            map: earthTexture,
-            roughness: 0.5,
-            metalness: 0.1,
-            emissive: new THREE.Color(0x112244),
-            emissiveIntensity: 0.18,
-            shininess: 35
-        });
-        
-        const geometry = new THREE.SphereGeometry(1.2, 128, 128);
-        const earthMesh = new THREE.Mesh(geometry, material);
-        scene.add(earthMesh);
-        
-        // add subtle atmosphere glow
-        const atmosGeometry = new THREE.SphereGeometry(1.23, 64, 64);
-        const atmosMaterial = new THREE.MeshPhongMaterial({
-            color: 0x4a90e2,
-            transparent: true,
-            opacity: 0.12,
-            side: THREE.BackSide
-        });
-        const atmosphere = new THREE.Mesh(atmosGeometry, atmosMaterial);
-        scene.add(atmosphere);
-        
-        // stars background (tiny sparkle)
-        const starGeometry = new THREE.BufferGeometry();
-        const starCount = 1200;
-        const starPos = [];
-        for(let i=0; i<starCount; i++) {
-            starPos.push((Math.random() - 0.5) * 400);
-            starPos.push((Math.random() - 0.5) * 200);
-            starPos.push((Math.random() - 0.5) * 80 - 40);
+            // Add continents (simplified)
+            ctx.fillStyle = '#2d5a3d';
+            
+            // North America
+            ctx.beginPath();
+            ctx.ellipse(200, 300, 150, 180, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // South America
+            ctx.beginPath();
+            ctx.ellipse(280, 550, 80, 120, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Europe & Africa
+            ctx.beginPath();
+            ctx.ellipse(1024, 250, 200, 280, 0.1, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Asia
+            ctx.beginPath();
+            ctx.ellipse(1400, 300, 280, 240, 0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Australia
+            ctx.beginPath();
+            ctx.ellipse(1600, 700, 80, 90, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Add cloud patterns
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+            for (let i = 0; i < 50; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const size = Math.random() * 100 + 50;
+                ctx.beginPath();
+                ctx.ellipse(x, y, size, size * 0.4, Math.random() * Math.PI, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Add specular highlight for water
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.beginPath();
+            ctx.ellipse(600, 300, 300, 200, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.magFilter = THREE.LinearFilter;
+            texture.minFilter = THREE.LinearMipmapLinearFilter;
+
+            const material = new THREE.MeshPhongMaterial({
+                map: texture,
+                shininess: 30,
+                emissive: 0x1a3a52,
+                emissiveIntensity: 0.1
+            });
+
+            earth = new THREE.Mesh(geometry, material);
+            earth.castShadow = true;
+            earth.receiveShadow = true;
+            scene.add(earth);
+
+            // Add glow layer
+            const glowGeometry = new THREE.SphereGeometry(1.02, 256, 256);
+            const glowMaterial = new THREE.MeshBasicMaterial({
+                color: 0x4a90e2,
+                transparent: true,
+                opacity: 0.15,
+                side: THREE.BackSide
+            });
+            const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+            earth.add(glowMesh);
         }
-        starGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(starPos), 3));
-        const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.08, transparent: true, opacity: 0.7 });
-        const stars = new THREE.Points(starGeometry, starMat);
-        scene.add(stars);
-        
-        // lights
-        const ambientLight = new THREE.AmbientLight(0x333344);
-        scene.add(ambientLight);
-        const mainLight = new THREE.DirectionalLight(0xfff5e0, 1.2);
-        mainLight.position.set(5, 3, 5);
-        scene.add(mainLight);
-        const fillLight = new THREE.PointLight(0x4466cc, 0.4);
-        fillLight.position.set(-2, 1, 3);
-        scene.add(fillLight);
-        const backLight = new THREE.PointLight(0x88aaff, 0.3);
-        backLight.position.set(0, 0, -3);
-        scene.add(backLight);
-        
-        // synchronize rotation with UTC time (Earth spins 360° per sidereal day, but for visual we use 24h)
-        let lastTimestamp = 0;
+
+        function createStarfield() {
+            const starGeometry = new THREE.BufferGeometry();
+            const starCount = 1000;
+            const positions = new Float32Array(starCount * 3);
+
+            for (let i = 0; i < starCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 4000;     // x
+                positions[i + 1] = (Math.random() - 0.5) * 4000; // y
+                positions[i + 2] = (Math.random() - 0.5) * 4000; // z
+            }
+
+            starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const starMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 10,
+                opacity: 0.8,
+                transparent: true
+            });
+
+            stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
+        }
+
+        function onWindowResize() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(width, height);
+        }
+
+        // ============================================
+        // ANIMATION & TIME SYNC
+        // ============================================
+
         function updateEarthRotation() {
             const now = new Date();
+
+            // UTC time in seconds since midnight
             const utcHours = now.getUTCHours();
             const utcMinutes = now.getUTCMinutes();
             const utcSeconds = now.getUTCSeconds();
-            const utcMs = now.getUTCMilliseconds();
-            const totalSecs = utcHours * 3600 + utcMinutes * 60 + utcSeconds + utcMs / 1000;
-            // full rotation 360° in 86400 secs
-            const angleDeg = (totalSecs / 86400) * 360;
-            const angleRad = angleDeg * Math.PI / 180;
-            // apply rotation on Y axis (eastward)
-            earthMesh.rotation.y = angleRad;
-            atmosphere.rotation.y = angleRad * 0.98;
-            
-            // update UI elements
-            document.getElementById('utcTime').innerText = 
-                String(utcHours).padStart(2,'0') + ':' + 
-                String(utcMinutes).padStart(2,'0') + ':' + 
-                String(utcSeconds).padStart(2,'0');
-            document.getElementById('rotationAngle').innerHTML = angleDeg.toFixed(2) + '°';
-            const meshEl = document.getElementById('meshStatus');
-            const pulse = 0.7 + Math.sin(Date.now() / 1800) * 0.2;
-            meshEl.style.opacity = pulse;
-            meshEl.innerHTML = pulse > 0.85 ? "🌀 MESH ACTIVE" : "⚡ NODE ONLINE";
-            
-            requestAnimationFrame(updateEarthRotation);
+            const utcMilliseconds = now.getUTCMilliseconds();
+
+            // Total seconds since UTC midnight
+            const totalSecondsUTC = (utcHours * 3600) + (utcMinutes * 60) + utcSeconds + (utcMilliseconds / 1000);
+
+            // Earth rotates 360 degrees in 86400 seconds (24 hours)
+            const rotationRadians = (totalSecondsUTC / 86400) * Math.PI * 2;
+            const rotationDegrees = (totalSecondsUTC / 86400) * 360;
+
+            // Apply rotation to Earth
+            earth.rotation.y = rotationRadians;
+
+            // Slight tilt (Earth's axial tilt is ~23.5°)
+            earth.rotation.z = Math.PI / 7.7;
+
+            // Update time display
+            const timeString = String(utcHours).padStart(2, '0') + ':' +
+                             String(utcMinutes).padStart(2, '0') + ':' +
+                             String(utcSeconds).padStart(2, '0');
+            document.getElementById('utcTime').textContent = timeString;
+
+            // Update rotation angle display
+            document.getElementById('rotationAngle').textContent = rotationDegrees.toFixed(1) + '°';
+
+            // Update mesh status (breathing effect)
+            const meshStatus = document.getElementById('meshStatus');
+            const breathe = Math.sin(totalSecondsUTC) * 0.3 + 0.7;
+            meshStatus.style.opacity = breathe;
         }
-        
-        updateEarthRotation();
-        
-        // animation loop: render scene, resize handling
+
         function animate() {
             requestAnimationFrame(animate);
-            stars.rotation.y += 0.0005;
-            stars.rotation.x += 0.0003;
+
+            updateEarthRotation();
+
+            // Subtle rotation of starfield
+            if (stars) {
+                stars.rotation.y += 0.00001;
+            }
+
+            // Camera bob effect (very subtle)
+            const time = Date.now() * 0.0001;
+            camera.position.y = Math.sin(time * 0.5) * 0.1;
+
             renderer.render(scene, camera);
         }
-        animate();
-        
-        // resize to match parent container (responsive)
-        const resizeObserver = new ResizeObserver(() => {
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-            renderer.setSize(width, height);
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-        });
-        resizeObserver.observe(container);
-        
-        // Enter Mesh interaction
-        window.enterFabric = function() {
-            const btn = document.getElementById('enterMeshBtn');
-            btn.textContent = '✦ CONNECTING... ✦';
-            btn.disabled = true;
+
+        // ============================================
+        // USER INTERACTION
+        // ============================================
+
+        function enterFabric() {
+            const button = document.getElementById('enterBtn');
+            button.textContent = 'INITIALIZING...';
+            button.disabled = true;
+
+            // Fade out and zoom
             setTimeout(() => {
-                alert('🌐 Welcome to The Mesh. Your node is synced with Earth’s rotation. Genesis online.');
-                btn.textContent = 'ENTER THE MESH';
-                btn.disabled = false;
-            }, 1400);
-        };
-        document.getElementById('enterMeshBtn').addEventListener('click', window.enterFabric);
-        
-        // mouse hover tilt effect optional
-        let mouseX = 0, targetRotationY = 0;
-        document.querySelector('.earth-stage').addEventListener('mousemove', (e) => {
-            const rect = container.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / rect.width - 0.5;
-            targetRotationY = x * 0.2;
-        });
-        function gentleTilt() {
-            earthMesh.rotation.z += (targetRotationY - earthMesh.rotation.z) * 0.05;
-            requestAnimationFrame(gentleTilt);
+                document.querySelector('.entrance-overlay').style.opacity = '0';
+                document.querySelector('.entrance-overlay').style.transition = 'opacity 1s ease-out';
+
+                // Zoom into earth
+                const startZ = camera.position.z;
+                const startTime = Date.now();
+                
+                const zoomInterval = setInterval(() => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = elapsed / 1500;
+
+                    if (progress >= 1) {
+                        clearInterval(zoomInterval);
+                        // Transition or redirect
+                        setTimeout(() => {
+                            console.log('Welcome to The Mesh. Your node is initializing...');
+                            // window.location.href = '/mesh'; // Replace with actual route
+                        }, 500);
+                    } else {
+                        camera.position.z = startZ - (startZ - 0.5) * progress;
+                    }
+                }, 1000 / 60);
+            }, 1500);
         }
-        gentleTilt();
-        
-        // final touch: update rotation indicator text
-        setInterval(() => {
-            const indicator = document.getElementById('rotationIndicator');
-            if(indicator) indicator.innerHTML = "🌐 REAL-TIME MAP ROTATION • UTC SYNC";
-        }, 3000);
+
+        // Initialize on load
+        window.addEventListener('load', initScene);
     </script>
 </body>
-</html>
+    </html>
